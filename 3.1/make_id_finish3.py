@@ -51,7 +51,6 @@ def del_face():
 			if deltat[tt][kk]>2:
 				n+=1
 		if n==array_data[i][9]:
-			print('del',faceList[tt][10],faceList[tt][5])
 			del faceList[tt]
 			
 		tt+=1
@@ -74,7 +73,6 @@ facerec = dlib.face_recognition_model_v1('dlib_face_recognition_resnet_model_v1.
 faceCount=0
 array_finish_list=[]
 array_data=[]
-#ID=0		
 
 with open(args["filefrom"], "rb") as f:
 	time_array = []
@@ -93,8 +91,6 @@ with open("dictionary.pickle", "rb") as f:
 				
 	except (EOFError, pickle.UnpicklingError):
 		pass
-#print(dictionary)
-
 
 
 for n in range(len(time_array)):
@@ -106,10 +102,7 @@ for n in range(len(time_array)):
 	rects = detector(gray, 0)
 	i=0
 	if(len(rects) > 0):
-		print(len(rects))
 		for rect in rects:
-			#shape_cam = predictor(gray, rect)
-			#shape = face_utils.shape_to_np(shape_cam)
 			(x, y, w, h) = face_utils.rect_to_bb(rect)
 			
 			if (x>0 and y>0 and x+h<width and y+h<height):
@@ -217,6 +210,7 @@ while i < len(array_data):
 
 #приствоение ID, выполняя сравнения со словарем
 for i in range(len(dictionary)):
+	print(dictionary[i][0])
 	ID  = dictionary[i][0]
 	for k in range(len(array_data)):
 		namber_k=array_data[k][10]
@@ -224,22 +218,29 @@ for i in range(len(dictionary)):
 			n_array=[]
 			array_namber_k=[]
 
-			for n in range(len(array_data)-k):
-				if (array_data[k+n][10]==namber_k):
-					n_array.append(n)				
-					dist=distance.euclidean(dictionary[i][2], array_data[k+n][6])
-					array_data[k+n][8]=dist
-					list_1=copy.deepcopy(array_data[k+n])
+			dist=distance.euclidean(dictionary[i][1], array_data[k][6])
+			array_data[k][8]=dist
+			list_1=copy.deepcopy(array_data[k])
+			array_namber_k.append(list_1)
+			namber=0
+			n_array.append(namber)
+			for n in range(len(array_data)-k-1):
+				namber+=1
+				if (array_data[k+n+1][10]==namber_k):
+					
+					n_array.append(namber)				
+					dist=distance.euclidean(dictionary[i][1], array_data[k+n+1][6])
+					array_data[k+n+1][8]=dist
+					list_1=copy.deepcopy(array_data[k+n+1])
 					array_namber_k.append(list_1)
-	
+
 			minimym, index = index_min(array_namber_k, 8)
-			if (minimym<=0.5):
+
+			if (minimym<=0.6):
 				for d in range(len(array_namber_k)):
 					array_data[k+n_array[d]][0]=dictionary[i][0]
 					print('+++++++++++++++++++++++++++++++++++++++++++++++++++')
 
-
-	
 
 if len(dictionary)==0:
 	ID=0
@@ -248,9 +249,6 @@ else:
 
 #присвоение ID тем строкам которых нет в словаре
 for i in range(len(array_data)):
-	if (i==0):
-		array_data[i][0]=0
-		ID=ID+1
 
 	if (array_data[i][0]=="none"):
 		array_data[i][0]=ID
@@ -277,6 +275,9 @@ for i in range(len(array_data)):
 					array_data[k+i+n_array[d]+1][0]=array_data[i][0]
 					print('-------------------------------------------------')
 
+
+
+#формировка строк для txt
 for i in range(len(array_data)):
 	#проверка на метку
 	if (array_data[i][7]==False):
@@ -298,14 +299,11 @@ for i in range(len(array_data)):
 					mass.pop()
 
 		if len(mass)>0:
-			#finish=mass[len(mass)-1][5]+1
-			#finish=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(finish))
 			array_f=mass
 			array_f[0][5]=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(array_f[0][5]))
 			array_f[0][7]=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mass[len(mass)-1][5]+1))
 			maximym, indexmax = index_max(array_f, 11)
 			array_f[0][6]=array_f[indexmax][6]
-			#array_f[0][6]=len(mass)
 			array_finish_list.append(array_f[0])
 
 d = open(args["fileto"], args["metod"])
@@ -314,9 +312,11 @@ for i in range(len(array_finish_list)):
 	d.write(s+ '\n')
 d.close()
 
+
 #цикл для создания словаря  /// новые строки
 array_dictionary_important=[]
 metka=[False]*len(array_finish_list)
+
 for i in  range(len(array_finish_list)):
 	if metka[i]==False:
 		ID=array_finish_list[i][0]
@@ -336,9 +336,11 @@ for i in  range(len(array_finish_list)):
 #формирование обновленного словаря
 for i in range(len(array_dictionary_important)):
 	dictionary.append(array_dictionary_important[i])
-print(dictionary)
+
+
 dictionary_updata=[]
 metka=[False]*len(dictionary)
+
 for i in range(len(dictionary)):
 	if metka[i]==False:
 		ID=dictionary[i][0]
@@ -353,10 +355,16 @@ for i in range(len(dictionary)):
 		maximym, indexmax = index_max(temporal_array, 2)
 		updata= temporal_array[indexmax]
 		dictionary_updata.append(updata)
-print()
-print(dictionary_updata)	
+	
 	
 with open("dictionary.pickle","wb") as f:
 	for i in range(len(dictionary_updata)):
 		pickle.dump(dictionary_updata[i], f)
+
+d = open("dictionary.txt", "w")
+for i in range(len(dictionary_updata)):
+	s=str(dictionary_updata[i])
+	d.write(s+ '\n')
+	d.write('\n')
+d.close()
 
