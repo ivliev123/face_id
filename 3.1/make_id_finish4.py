@@ -165,18 +165,21 @@ while i < len(array_data):
 			#обновление массива
 			metka[index]=True
 
-			
+			dist=distance.euclidean(array_data[i+index][6], faceList[f][6])
 			if len(temporal_dist_array[f])>0:
-
-				dist=distance.euclidean(array_data[i+index][6], faceList[f][6])
+				#dist=distance.euclidean(array_data[i+index][6], faceList[f][6])
+				#метка прерывания массива
+				metka_all=False
 				if dist<0.5:
+					metka_all=True
 					temporal_dist_array[f].append(dist)
 					array_namber[f].append(i+index)
 					array_for[f]_apdata.apppend(copy.deepcopy(array_data[i+index]))
 			else:
-				dist=distance.euclidean(array_data[i+index][6], faceList[f][6])
-
+				#dist=distance.euclidean(array_data[i+index][6], faceList[f][6])
+				metka_all=False
 				if dist>0.5:
+					metka_all=True
 					temporal_dist_array[f].append(dist)
 					array_namber[f].append(i+index)
 					array_for_apdata[f].apppend(copy.deepcopy(array_data[i+index]))
