@@ -105,8 +105,8 @@ for file in os.listdir('.'):
 		time_array.append(name)
 		print (name)
 		
-time_array1 = sorted(time_array, key=float)
-print (time_array1)
+time_array = sorted(time_array, key=float)
+print (time_array)
 
 os.chdir('..')
 print(os.getcwd())
@@ -200,7 +200,7 @@ while i < len(array_data):
 					metka_all=True
 					temporal_dist_array[f].append(dist)
 					array_namber[f].append(i+index)
-					array_for_apdata[f].apppend(copy.deepcopy(array_data[i+index]))
+					array_for_apdata[f].append(copy.deepcopy(array_data[i+index]))
 			else:
 				metka_all=False
 				if dist>0.5:
@@ -208,7 +208,7 @@ while i < len(array_data):
 
 					temporal_dist_array[f].append(dist)
 					array_namber[f].append(i+index)
-					array_for_apdata[f].apppend(copy.deepcopy(array_data[i+index]))
+					array_for_apdata[f].append(copy.deepcopy(array_data[i+index]))
 
 			#вносить полные изменения в array_data только в том случае если убедились что это был тот же человек
 			if dist <0.5 and metka_all==False:
