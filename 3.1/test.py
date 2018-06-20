@@ -1,4 +1,4 @@
-# python3 make_id_finish.py  -f 'time.pickle' -m 'w' -t 'ID.txt'
+# python3 make_id_finish.py  -m 'w' -t 'ID.txt'
 
 import pickle
 import argparse
@@ -11,6 +11,8 @@ import copy
 import time
 import cv2
 import imutils
+import os
+import fnmatch
 
 def index_min(array, n):
     array_new=[]
@@ -20,7 +22,7 @@ def index_min(array, n):
     index=array_new.index(minimym)
     return minimym, index
 
-def index_max(array, n): 
+def index_max(array, n):
     array_new=[]
     for i in range(len(array)):
         array_new.append(array[i][n])
@@ -38,7 +40,7 @@ def rect_to_bb(rect):
 
 
 def del_face():
-	deltat=[[0]*array_data[i][9]]*len(faceList) 
+	deltat=[[0]*array_data[i][9]]*len(faceList)
 	for tt in range(len(faceList)):
 		for kk in range(array_data[i][9]):
 			dt=array_data[i+kk][5]-faceList[tt][5]
@@ -47,12 +49,12 @@ def del_face():
 	while tt <(len(faceList)):
 		n=0
 		for kk in range(array_data[i][9]):
-			
+
 			if deltat[tt][kk]>2:
 				n+=1
 		if n==array_data[i][9]:
 			del faceList[tt]
-			
+
 		tt+=1
 
 
@@ -67,35 +69,53 @@ args = vars(ap.parse_args())
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
-facerec = dlib.face_recognition_model_v1('dlib_face_recognition_resnet_model_v1.dat')  
+facerec = dlib.face_recognition_model_v1('dlib_face_recognition_resnet_model_v1.dat')
 
 
 faceCount=0
 array_finish_list=[]
 array_data=[]
+time_array = []
 
-with open(args["filefrom"], "rb") as f:
-	time_array = []
-	try:
-		while True:
-			time_array.append(pickle.load(f))
-				
-	except (EOFError, pickle.UnpicklingError):
-		pass
 
 with open("dictionary.pickle", "rb") as f:
 	dictionary = []
 	try:
 		while True:
 			dictionary.append(pickle.load(f))
-				
+
 	except (EOFError, pickle.UnpicklingError):
 		pass
 
+#вместо чтения из файла тут будет чтение из файловой системы
+#with open(args["filefrom"], "rb") as f:
+#	time_array = []
+#	try:
+#		while True:
+#			time_array.append(pickle.load(f))
+
+#	except (EOFError, pickle.UnpicklingError):
+#		pass
+
+os.chdir('info/')
+for file in os.listdir('.'):
+	if fnmatch.fnmatch(file, '*.jpg'):
+		name=os.path.splitext(file)[0]
+		name = float(name)
+		time_array.append(name)
+		print (name)
+		
+time_array1 = sorted(time_array, key=float)
+print (time_array1)
+
+os.chdir('..')
+print(os.getcwd())
 
 for n in range(len(time_array)):
-	print(time_array[n])
+    #
+	
 	frame= cv2.imread('info/'+str(time_array[n])+'.jpg')
+	
 	frame = imutils.resize(frame, width=600)
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	height, width = frame.shape[:2]
@@ -104,7 +124,7 @@ for n in range(len(time_array)):
 	if(len(rects) > 0):
 		for rect in rects:
 			(x, y, w, h) = face_utils.rect_to_bb(rect)
-			
+
 			if (x>0 and y>0 and x+h<width and y+h<height):
 				i+=1
 				start = time_array[n]
@@ -141,13 +161,17 @@ while i < len(array_data):
 
 		metka=[False]*array_data[i][9]
 		#каждому лицу из facelist выделить по столбцу из temporal_dist_array
-		temporal_dist_array=[[]]*len(faceList)
-		array_for_apdata=[[]]*len(faceList)
-		array_namber=[[]]*len(faceList)
+		#temporal_dist_array=[[]]*len(faceList)
+		#array_for_apdata=[[]]*len(faceList)
+		#array_namber=[[]]*len(faceList)
+
+		temporal_dist_array = [[] * 1 for i in range(len(faceList))]
+		array_for_apdata = [[] * 1 for i in range(len(faceList))]
+		array_namber = [[] * 1 for i in range(len(faceList))]
 
 		for f in range(len(faceList)):
 			#созаем пустой массив для временной обработки
-			rectangle_now=np.zeros((array_data[i][9],3))	
+			rectangle_now=np.zeros((array_data[i][9],3))
 			#перебор всех следующих элементов i-й и все лица что на этом кадре
 			for rect in range(array_data[i][9]):
 				x2=array_data[i+rect][1]
@@ -156,7 +180,7 @@ while i < len(array_data):
 				x1=faceList[f][1]
 				y1=faceList[f][2]
 				dist = np.sqrt((x2 - x1)**2 + (y2 - y1)**2 )
-				
+
 				rectangle_now[rect][0]=x2
 				rectangle_now[rect][1]=y2
 				rectangle_now[rect][2]=dist
@@ -165,9 +189,9 @@ while i < len(array_data):
 			#обновление массива
 			metka[index]=True
 
-			
-			
-			
+
+
+
 			dist=distance.euclidean(array_data[i+index][6], faceList[f][6])
 			if len(temporal_dist_array[f])>0:
 				#метка прерывания массива
@@ -181,23 +205,23 @@ while i < len(array_data):
 				metka_all=False
 				if dist>0.5:
 					metka_all=True
-					
+
 					temporal_dist_array[f].append(dist)
 					array_namber[f].append(i+index)
 					array_for_apdata[f].apppend(copy.deepcopy(array_data[i+index]))
-			
+
 			#вносить полные изменения в array_data только в том случае если убедились что это был тот же человек
-			if dist <0.5 and metka_all==False:	
+			if dist <0.5 and metka_all==False:
 				faceList[f][1]=rectangle_now[index][0]
 				faceList[f][2]=rectangle_now[index][1]
-				array_data[i+index][10]=faceList[f][10] #запись обработаных данных в массив данных 
-				faceList[f][5]=array_data[i+index][5] # обновление времени	
-			
+				array_data[i+index][10]=faceList[f][10] #запись обработаных данных в массив данных
+				faceList[f][5]=array_data[i+index][5] # обновление времени
+
 			#чтоб не было ошибок обновлять нужно постоянно только по координате и времени
 			faceList[f][1]=rectangle_now[index][0]
 			faceList[f][2]=rectangle_now[index][1]
 			faceList[f][5]=array_data[i+index][5]
-			
+
 			#metka_all==False указывает на других лиц в этих координатах не появились
 			if len(temporal_dist_array[f])<3 and metka_all==False:
 				#запуск цикла на обновление номера в array_data
@@ -206,11 +230,11 @@ while i < len(array_data):
 					faceList[len(faceList)-1][1]=array_data[array_namber[ni]][1]
 					array_data[array_namber[ni]][10]=faceList[f][10]
 					faceList[f][5]=array_data[array_namber[ni]][5]
-				temporal_dist_array[n]=[]
-					
-		#выполнение удаленя и обновление данных если превысило 3	
+				temporal_dist_array[f]=[]
+
+		#выполнение удаленя и обновление данных если превысило 3
 		n=0
-		while n < len(len(temporal_dist_array)):
+		while n < len(temporal_dist_array):
 			if len(temporal_dist_array[n])>=3:
 				del faceList[n]
 				#добавляем новый faceList и по циклу выполняем присвоение номера в array_data
@@ -222,10 +246,10 @@ while i < len(array_data):
 					array_data[array_namber[ni]][10]=faceList[len(faceList)-1][10]
 					faceList[len(faceList)-1][5]=array_data[array_namber[ni]][5]
 				temporal_dist_array[n]=[]
-				faceCount+=1	
+				faceCount+=1
 			n+=1
 
-					
+
 
 
 		for k in range(array_data[i][9]):
@@ -233,7 +257,7 @@ while i < len(array_data):
 				array_data[i+k][10]=faceCount
 				faceList.append(copy.deepcopy(array_data[i+k]))
 				faceCount += 1
-	
+
 #3
 	if(len(faceList) > array_data[i][9]):
 
@@ -242,15 +266,15 @@ while i < len(array_data):
 		for rect in range(array_data[i][9]):
 			rectangle_now=np.zeros((len(faceList),3))
 			for f in range(len(faceList)):
-		
+
 				x2=array_data[i+f][1]
 				y2=array_data[i+f][2]
 
 				x1=faceList[rect][1]
 				y1=faceList[rect][2]
 				dist = np.sqrt((x2 - x1)**2 + (y2 - y1)**2 )
-				
-				rectangle_now[f][0]=x2				
+
+				rectangle_now[f][0]=x2
 				rectangle_now[f][1]=y2
 				rectangle_now[f][2]=dist
 			#поиск минимального расстояния
@@ -258,11 +282,11 @@ while i < len(array_data):
 			#обновление массива
 			faceList[rect][1]=rectangle_now[index][0]
 			faceList[rect][2]=rectangle_now[index][1]
-			faceList[rect][5]=array_data[i+index][5] # обновление времени	
-			array_data[i+rect][10]=faceList[index][10]	#запись обработаных данных в массив данных 	
+			faceList[rect][5]=array_data[i+index][5] # обновление времени
+			array_data[i+rect][10]=faceList[index][10]	#запись обработаных данных в массив данных
 
-			
-			
+
+
 			metka[index]=True
 
 		n=0
@@ -293,8 +317,8 @@ for i in range(len(dictionary)):
 			for n in range(len(array_data)-k-1):
 				namber+=1
 				if (array_data[k+n+1][10]==namber_k):
-					
-					n_array.append(namber)				
+
+					n_array.append(namber)
 					dist=distance.euclidean(dictionary[i][1], array_data[k+n+1][6])
 					array_data[k+n+1][8]=dist
 					list_1=copy.deepcopy(array_data[k+n+1])
@@ -319,22 +343,22 @@ for i in range(len(array_data)):
 	if (array_data[i][0]=="none"):
 		array_data[i][0]=ID
 		ID=ID+1
-	
+
 	for k in range(len(array_data)-i-1):
-		
+
 		namber_k=array_data[k+i+1][10]
 		if (array_data[k+i+1][0]=="none"):
 			n_array=[]
-			array_namber_k=[]			
-			
+			array_namber_k=[]
+
 			for n in range(len(array_data)-i-k-1):
 				if (array_data[k+i+n+1][10]==namber_k):
-					n_array.append(n)				
+					n_array.append(n)
 					dist=distance.euclidean(array_data[i][6], array_data[k+i+n+1][6])
 					array_data[i+k+n+1][8]=dist
 					list_1=copy.deepcopy(array_data[k+i+n+1])
 					array_namber_k.append(list_1)
-	
+
 			minimym, index = index_min(array_namber_k, 8)
 			if (minimym<=0.5):
 				for d in range(len(array_namber_k)):
@@ -374,7 +398,7 @@ for i in range(len(array_data)):
 
 d = open(args["fileto"], args["metod"])
 for i in range(len(array_finish_list)):
-	s= str(array_finish_list[i][0]) +"  "+ str(array_finish_list[i][5]) +"  " + str(array_finish_list[i][7]) 
+	s= str(array_finish_list[i][0]) +"  "+ str(array_finish_list[i][5]) +"  " + str(array_finish_list[i][7])
 	d.write(s+ '\n')
 d.close()
 
@@ -390,7 +414,7 @@ for i in  range(len(array_finish_list)):
 		temporal_array=[]
 		temporal_array.append(array_finish_list[i])
 		metka[i] = True
-		for k in range(len(array_finish_list)-i-1): 
+		for k in range(len(array_finish_list)-i-1):
 			if (metka[k+i+1]==False) and (array_finish_list[k+i+1][0]==ID):
 				metka[k+i+1] = True
 				temporal_array.append(array_finish_list[k+i+1])
@@ -414,15 +438,15 @@ for i in range(len(dictionary)):
 		temporal_array=[]
 		temporal_array.append(dictionary[i])
 		metka[i] = True
-		for k in range(len(dictionary)-i-1): 
+		for k in range(len(dictionary)-i-1):
 			if (metka[k+i+1]==False) and (dictionary[k+i+1][0]==ID):
 				metka[k+i+1] = True
 				temporal_array.append(dictionary[k+i+1])
 		maximym, indexmax = index_max(temporal_array, 2)
 		updata= temporal_array[indexmax]
 		dictionary_updata.append(updata)
-	
-	
+
+
 with open("dictionary.pickle","wb") as f:
 	for i in range(len(dictionary_updata)):
 		pickle.dump(dictionary_updata[i], f)
