@@ -87,29 +87,21 @@ with open("dictionary.pickle", "rb") as f:
 	except (EOFError, pickle.UnpicklingError):
 		pass
 
-#вместо чтения из файла тут будет чтение из файловой системы
-#with open(args["filefrom"], "rb") as f:
-#	time_array = []
-#	try:
-#		while True:
-#			time_array.append(pickle.load(f))
 
-#	except (EOFError, pickle.UnpicklingError):
-#		pass
 
+# чтение из файловой системы
 os.chdir('info/')
 for file in os.listdir('.'):
 	if fnmatch.fnmatch(file, '*.jpg'):
 		name=os.path.splitext(file)[0]
 		name = float(name)
 		time_array.append(name)
-		print (name)
+
 		
 time_array = sorted(time_array, key=float)
-print (time_array)
 
 os.chdir('..')
-print(os.getcwd())
+
 
 for n in range(len(time_array)):
     #
@@ -161,9 +153,6 @@ while i < len(array_data):
 
 		metka=[False]*array_data[i][9]
 		#каждому лицу из facelist выделить по столбцу из temporal_dist_array
-		#temporal_dist_array=[[]]*len(faceList)
-		#array_for_apdata=[[]]*len(faceList)
-		#array_namber=[[]]*len(faceList)
 
 		temporal_dist_array = [[] * 1 for i in range(len(faceList))]
 		array_for_apdata = [[] * 1 for i in range(len(faceList))]
@@ -191,7 +180,7 @@ while i < len(array_data):
 
 
 
-
+#################################################################
 			dist=distance.euclidean(array_data[i+index][6], faceList[f][6])
 			if len(temporal_dist_array[f])>0:
 				#метка прерывания массива
@@ -233,6 +222,8 @@ while i < len(array_data):
 				temporal_dist_array[f]=[]
 
 		#выполнение удаленя и обновление данных если превысило 3
+
+
 		n=0
 		while n < len(temporal_dist_array):
 			if len(temporal_dist_array[n])>=3:
@@ -248,7 +239,7 @@ while i < len(array_data):
 				temporal_dist_array[n]=[]
 				faceCount+=1
 			n+=1
-
+############################################################
 
 
 
@@ -284,10 +275,71 @@ while i < len(array_data):
 			faceList[rect][2]=rectangle_now[index][1]
 			faceList[rect][5]=array_data[i+index][5] # обновление времени
 			array_data[i+rect][10]=faceList[index][10]	#запись обработаных данных в массив данных
-
-
-
 			metka[index]=True
+
+
+
+#################################################################
+			dist=distance.euclidean(array_data[i+index][6], faceList[f][6])
+			if len(temporal_dist_array[f])>0:
+				#метка прерывания массива
+				metka_all=False
+				if dist<0.5:
+					metka_all=True
+					temporal_dist_array[f].append(dist)
+					array_namber[f].append(i+index)
+					array_for_apdata[f].append(copy.deepcopy(array_data[i+index]))
+			else:
+				metka_all=False
+				if dist>0.5:
+					metka_all=True
+
+					temporal_dist_array[f].append(dist)
+					array_namber[f].append(i+index)
+					array_for_apdata[f].append(copy.deepcopy(array_data[i+index]))
+
+			#вносить полные изменения в array_data только в том случае если убедились что это был тот же человек
+			if dist <0.5 and metka_all==False:
+				faceList[f][1]=rectangle_now[index][0]
+				faceList[f][2]=rectangle_now[index][1]
+				array_data[i+index][10]=faceList[f][10] #запись обработаных данных в массив данных
+				faceList[f][5]=array_data[i+index][5] # обновление времени
+
+			#чтоб не было ошибок обновлять нужно постоянно только по координате и времени
+			faceList[f][1]=rectangle_now[index][0]
+			faceList[f][2]=rectangle_now[index][1]
+			faceList[f][5]=array_data[i+index][5]
+
+			#metka_all==False указывает на других лиц в этих координатах не появились
+			if len(temporal_dist_array[f])<3 and metka_all==False:
+				#запуск цикла на обновление номера в array_data
+				for ni in range(len(temporal_dist_array[f])):
+					faceList[len(faceList)-1][0]=array_data[array_namber[ni]][0]
+					faceList[len(faceList)-1][1]=array_data[array_namber[ni]][1]
+					array_data[array_namber[ni]][10]=faceList[f][10]
+					faceList[f][5]=array_data[array_namber[ni]][5]
+				temporal_dist_array[f]=[]
+
+		#выполнение удаленя и обновление данных если превысило 3
+
+
+		n=0
+		while n < len(temporal_dist_array):
+			if len(temporal_dist_array[n])>=3:
+				del faceList[n]
+				#добавляем новый faceList и по циклу выполняем присвоение номера в array_data
+				faceList.append(copy.deepcopy(array_data[array_namber[0]]))
+				faceList[len(faceList)-1][10]=faceCount
+				for ni in range(len(temporal_dist_array[f])):
+					faceList[len(faceList)-1][0]=array_data[array_namber[ni]][0]
+					faceList[len(faceList)-1][1]=array_data[array_namber[ni]][1]
+					array_data[array_namber[ni]][10]=faceList[len(faceList)-1][10]
+					faceList[len(faceList)-1][5]=array_data[array_namber[ni]][5]
+				temporal_dist_array[n]=[]
+				faceCount+=1
+			n+=1
+############################################################
+
 
 		n=0
 		while n < len(faceList):
@@ -360,7 +412,7 @@ for i in range(len(array_data)):
 					array_namber_k.append(list_1)
 
 			minimym, index = index_min(array_namber_k, 8)
-			if (minimym<=0.5):
+			if (minimym<=0.55):
 				for d in range(len(array_namber_k)):
 					array_data[k+i+n_array[d]+1][0]=array_data[i][0]
 					print('-------------------------------------------------')
@@ -421,7 +473,6 @@ for i in  range(len(array_finish_list)):
 		maximym, indexmax = index_max(temporal_array, 11)
 		important= [temporal_array[indexmax][0], temporal_array[indexmax][6], temporal_array[indexmax][11]]
 		array_dictionary_important.append(important)
-
 
 #формирование обновленного словаря
 for i in range(len(array_dictionary_important)):
