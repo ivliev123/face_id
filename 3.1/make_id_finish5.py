@@ -78,16 +78,30 @@ array_data=[]
 time_array = []
 
 
-with open("dictionary.pickle", "rb") as f:
+#with open("dictionary.pickle", "rb") as f:
+#	dictionary = []
+#	try:
+#		while True:
+#			dictionary.append(pickle.load(f))
+#
+#	except (EOFError, pickle.UnpicklingError):
+#		pass
+
+
+try:
+	with open("dictionary.pickle", "rb") as f:
+		dictionary = []
+		try:
+			while True:
+				dictionary.append(pickle.load(f))
+
+		except (EOFError, pickle.UnpicklingError):
+			pass
+
+except FileNotFoundError:
+	f = open('dictionary.pickle', 'wb')
+	f.close
 	dictionary = []
-	try:
-		while True:
-			dictionary.append(pickle.load(f))
-
-	except (EOFError, pickle.UnpicklingError):
-		pass
-
-
 
 # чтение из файловой системы
 os.chdir('info/')
