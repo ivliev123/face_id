@@ -429,7 +429,6 @@ for i in range(len(array_data)):
 
 		mass=[]
 		mass.append(array_data[i])
-		#далее производим обработку всех строк, которые не обработаны и имеют такой же ID
 		for k in range(len(array_data)-i-1):
 			#проверка на метку и соответствие сторк i и i+k+1 на id
 			if (array_data[k+i+1][7]==False) and (array_data[k+i+1][0]==ID_2):
