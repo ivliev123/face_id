@@ -46,9 +46,6 @@ while True:
 		start = time.time()
 		cv2.imwrite('info/'+str(start)+'.jpg',frame)
 
-		with open(args["file"], args["metod"]) as f:
-			pickle.dump(start, f)
-
 	cv2.imshow("Frame", frame)
 
 	key = cv2.waitKey(1) & 0xFF

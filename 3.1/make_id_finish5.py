@@ -1,4 +1,4 @@
-# python3 make_id_finish.py  -m 'w' -t 'ID.txt'
+# python3 make_id_finish5.py  -m 'w' -t 'ID.txt'
 
 import pickle
 import argparse
@@ -392,7 +392,7 @@ for i in range(len(dictionary)):
 
 			minimym, index = index_min(array_namber_k, 8)
 
-			if (minimym<=0.6):
+			if (minimym<=0.5):
 				for d in range(len(array_namber_k)):
 					array_data[k+n_array[d]][0]=dictionary[i][0]
 					print('+++++++++++++++++++++++++++++++++++++++++++++++++++')
@@ -426,7 +426,7 @@ for i in range(len(array_data)):
 					array_namber_k.append(list_1)
 
 			minimym, index = index_min(array_namber_k, 8)
-			if (minimym<=0.55):
+			if (minimym<=0.5):
 				for d in range(len(array_namber_k)):
 					array_data[k+i+n_array[d]+1][0]=array_data[i][0]
 					print('-------------------------------------------------')

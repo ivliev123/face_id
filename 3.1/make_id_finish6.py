@@ -78,7 +78,7 @@ faceCount=0
 array_finish_list=[]
 array_data=[]
 time_array = []
-bad_face=1
+bad_face=3
 
 
 
@@ -150,6 +150,10 @@ temporal_dist_array = []
 array_for_apdata = []
 array_namber = []
 
+temporal_dist_array_3 = []
+array_for_apdata_3 = []
+array_namber_3 = []
+
 while i < len(array_data):
 	del_face()
 
@@ -214,11 +218,9 @@ while i < len(array_data):
 				metka_all=False
 				if dist>0.5:
 					metka_all=True
-
 					temporal_dist_array[f].append(dist)
 					array_namber[f].append(i+index)
 					array_for_apdata[f].append(copy.deepcopy(array_data[i+index]))
-
 
 
 			#вносить полные изменения в array_data только в том случае если убедились что это был тот же человек
@@ -302,15 +304,15 @@ while i < len(array_data):
 #3
 	if(len(faceList) > array_data[i][9]):
 
-
 		del_face()
 		metka=[0]*len(faceList)
 
 		#каждому лицу из facelist выделить по столбцу из temporal_dist_array
-
-		temporal_dist_array = [[] * 1 for i in range(len(faceList))]
-		array_for_apdata = [[] * 1 for i in range(len(faceList))]
-		array_namber = [[] * 1 for i in range(len(faceList))]
+		if len(temporal_dist_array_3)==0:
+			for face in range(len(faceList)):
+				temporal_dist_array_3.append([])
+				array_for_apdata_3.append([])
+				array_namber_3.append([])
 
 		for rect in range(array_data[i][9]):
 			rectangle_now=np.zeros((len(faceList),3))
@@ -328,29 +330,25 @@ while i < len(array_data):
 				rectangle_now[f][2]=dist_xy
 			#поиск минимального расстояния
 			minimym, index = index_min(rectangle_now, 2)
-
 			metka[index]=True
 
-
-
 #################################################################f-index  i+index - i+rect
-			dist=distance.euclidean(array_data[i+rect][6], faceList[index][6])
-			if len(temporal_dist_array[index])>0:
-				#метка прерывания массива
+			if len(temporal_dist_array_3[index])>0:
+				dist=distance.euclidean(array_data[i+rect][6], array_for_apdata_3[index][len(array_for_apdata_3[index])-1][6])
 				metka_all=False
 				if dist<0.5:
 					metka_all=True
-					temporal_dist_array[index].append(dist)
-					array_namber[index].append(i+index)
-					array_for_apdata[index].append(copy.deepcopy(array_data[i+index]))
+					temporal_dist_array_3[index].append(dist)
+					array_namber_3[index].append(i+index)
+					array_for_apdata_3[index].append(copy.deepcopy(array_data[i+index]))
 			else:
+				dist=distance.euclidean(array_data[i+rect][6], faceList[index][6])
 				metka_all=False
 				if dist>0.5:
 					metka_all=True
-
-					temporal_dist_array[index].append(dist)
-					array_namber[index].append(i+index)
-					array_for_apdata[index].append(copy.deepcopy(array_data[i+index]))
+					temporal_dist_array_3[index].append(dist)
+					array_namber_3[index].append(i+index)
+					array_for_apdata_3[index].append(copy.deepcopy(array_data[i+index]))
 
 			#вносить полные изменения в array_data только в том случае если убедились что это был тот же человек
 			if dist <0.5 and metka_all==False:
@@ -365,33 +363,45 @@ while i < len(array_data):
 			faceList[index][5]=array_data[i+rect][5]
 
 			#metka_all==False указывает на других лиц в этих координатах не появились
-			if len(temporal_dist_array[index])<bad_face and metka_all==False:
+			if len(temporal_dist_array_3[index])<bad_face and metka_all==False:
 				#запуск цикла на обновление номера в array_data
-				for ni in range(len(temporal_dist_array[f])):
-					faceList[index][0]=array_data[array_namber[ni]][0]
-					faceList[index][1]=array_data[array_namber[ni]][1]
-					array_data[array_namber[ni]][10]=faceList[index][10]
-					faceList[index][5]=array_data[array_namber[ni]][5]
-				temporal_dist_array[index]=[]
+				for ni in range(len(temporal_dist_array_3[f])):
+					faceList[index][0]=array_data[array_namber_3[ni]][0]
+					faceList[index][1]=array_data[array_namber_3[ni]][1]
+					array_data[array_namber_3[ni]][10]=faceList[index][10]
+					faceList[index][5]=array_data[array_namber_3[ni]][5]
+				temporal_dist_array_3[index]=[]
 
 		#выполнение удаленя и обновление данных если превысило 3
 
 
 		n=0
-		while n < len(temporal_dist_array):
-			if len(temporal_dist_array[n])>=bad_face:
+		while n < len(temporal_dist_array_3):
+			if len(temporal_dist_array_3[n])>=bad_face:
 				del faceList[n]
 				#добавляем новый faceList и по циклу выполняем присвоение номера в array_data
-				faceList.append(copy.deepcopy(array_data[array_namber[n][0]]))
+				faceList.append(copy.deepcopy(array_for_apdata_3[n][0]))
 				faceList[len(faceList)-1][10]=faceCount
-				for ni in range(len(temporal_dist_array[n])):
-					faceList[len(faceList)-1][0]=array_data[array_namber[ni]][0]
-					faceList[len(faceList)-1][1]=array_data[array_namber[ni]][1]
-					array_data[array_namber[ni]][10]=faceCount
-					faceList[len(faceList)-1][5]=array_data[array_namber[ni]][5]
-				temporal_dist_array[n]=[]
+				for ni in range(len(temporal_dist_array_3[n])):
+					faceList[len(faceList)-1][0]=copy.deepcopy(array_for_apdata_3[n][ni][0])
+					faceList[len(faceList)-1][1]=copy.deepcopy(array_for_apdata_3[n][ni][1])
+					array_data[array_namber_3[n][ni]][10]=faceCount
+					faceList[len(faceList)-1][5]=copy.deepcopy(array_for_apdata_3[n][ni][5])
+
+				del temporal_dist_array_3[n]
+				del array_for_apdata_3[n]	
+				del array_namber_3[n]			
+				
+				temporal_dist_array_3.append([])
+				array_for_apdata_3.append([])
+				array_namber_3.append([])
+
 				faceCount+=1
 			n+=1
+
+
+
+
 ############################################################
 
 
