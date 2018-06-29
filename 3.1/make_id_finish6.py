@@ -78,7 +78,7 @@ faceCount=0
 array_finish_list=[]
 array_data=[]
 time_array = []
-bad_face=3
+bad_face=1
 
 
 
@@ -251,10 +251,6 @@ while i < len(array_data):
 				del array_for_apdata[f]
 
 
-			print(array_data[i+index][10])
-			print(array_namber)
-			print(dist)
-
 		#выполнение удаленя и обновление данных если превысило 3
 
 
@@ -399,9 +395,6 @@ while i < len(array_data):
 				faceCount+=1
 			n+=1
 
-
-
-
 ############################################################
 
 
@@ -410,14 +403,6 @@ while i < len(array_data):
 			if(metka[n]==False):
 				del faceList[n]
 			n+=1
-	#халтура
-	#for k in range(len(faceList)):
-	#	if array_data[i+k][10]=='none':
-	#		array_data[i+k][10]=faceList[k][10]
-	#		print(faceList[k][10])
-	#
-	#		print(array_data[i+k][10])
-
 
 
 	i+=array_data[i][9]
@@ -566,6 +551,8 @@ for i in range(len(array_dictionary_important)):
 dictionary_updata=[]
 metka=[False]*len(dictionary)
 
+
+#групировка по одному ID и сортирвка нужных дескрипторов
 for i in range(len(dictionary)):
 	if metka[i]==False:
 		ID=dictionary[i][0]
@@ -583,7 +570,25 @@ for i in range(len(dictionary)):
 		updata_min= temporal_array[indexmin]
 		dictionary_updata.append(updata_max)
 		dictionary_updata.append(updata_min)
-
+		
+		all_deskriptor=[]
+		for d in range(len(temporal_array)):
+		
+			for d1 in range(len(temporal_array)-d-1):
+				dist=distance.euclidean(temporal_array[d][1], temporal_array[d1+d+1][1])
+				for_all_deskriptor=[ID,temporal_array[d][1],temporal_array[d1+d+1][1],dist,temporal_array[d][2],temporal_array[d1+d+1][2]]
+				all_deskriptor.append(for_all_deskriptor)
+		#сортировка и выбор максимальных
+		all_deskriptor.sort(key=lambda i: i[3])
+		x=0
+		for l in reversed(all_deskriptor):
+			if x<3:
+				
+				deskriptor1=[l[0],l[1],l[3]]
+				deskriptor2=[l[0],l[2],l[4]]
+				dictionary_updata.append(deskriptor1)
+				dictionary_updata.append(deskriptor2)
+			x+=1
 
 with open("dictionary.pickle","wb") as f:
 	for i in range(len(dictionary_updata)):
