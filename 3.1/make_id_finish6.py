@@ -1,4 +1,4 @@
-# python3 make_id_finish5.py  -m 'w' -t 'ID.txt'
+# python3 make_id_finish6.py  -m 'w' -t 'ID.txt'
 
 import pickle
 import argparse
@@ -40,7 +40,6 @@ def rect_to_bb(rect):
 
 
 def del_face():
-	#deltat=[[0]*array_data[i][9]]*len(faceList)
 	deltat = [[0] * 1 for i in range(len(faceList))]
 	for tt in range(len(faceList)):
 		for kk in range(array_data[i][9]):
@@ -200,8 +199,6 @@ while i < len(array_data):
 			#обновление массива
 			metka[index]=True
 
-
-
 #################################################################
 			#dist=distance.euclidean(array_data[i+index][6], faceList[f][6])
 			if len(temporal_dist_array[f])>0:
@@ -277,13 +274,7 @@ while i < len(array_data):
 
 				faceCount+=1
 			n+=1
-
-		
-
 ############################################################
-
-
-
 		for k in range(array_data[i][9]):
 			if (metka[k]==False):
 				array_data[i+k][10]=faceCount
@@ -293,8 +284,6 @@ while i < len(array_data):
 				temporal_dist_array.append([])
 				array_for_apdata.append([])
 				array_namber.append([])
-
-
 
 
 #3
@@ -368,9 +357,7 @@ while i < len(array_data):
 					faceList[index][5]=array_data[array_namber_3[ni]][5]
 				temporal_dist_array_3[index]=[]
 
-		#выполнение удаленя и обновление данных если превысило 3
-
-
+		#выполнение удаленя и обновление данных если превысило face_bad
 		n=0
 		while n < len(temporal_dist_array_3):
 			if len(temporal_dist_array_3[n])>=bad_face:
@@ -403,7 +390,6 @@ while i < len(array_data):
 			if(metka[n]==False):
 				del faceList[n]
 			n+=1
-
 
 	i+=array_data[i][9]
 
@@ -522,7 +508,7 @@ for i in range(len(array_finish_list)):
 d.close()
 
 
-#цикл для создания словаря  /// новые строки  /// брать нужно не новые сторки /// 
+#цикл для создания словаря 
 array_dictionary_important=[]
 metka=[False]*len(array_finish_list)
 
@@ -550,7 +536,6 @@ for i in range(len(array_dictionary_important)):
 
 dictionary_updata=[]
 metka=[False]*len(dictionary)
-
 
 #групировка по одному ID и сортирвка нужных дескрипторов
 for i in range(len(dictionary)):
