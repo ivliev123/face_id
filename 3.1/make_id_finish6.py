@@ -495,8 +495,9 @@ for i in range(len(array_data)):
 
 		if len(mass)>0:
 			array_f=mass
+			finish_time=float(array_f[len(array_f)-1][5]+1)
 			array_f[0][5]=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(array_f[0][5]))
-			array_f[0][7]=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mass[len(mass)-1][5]+1))
+			array_f[0][7]=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(finish_time))
 			maximym, indexmax = index_max(array_f, 11)
 			array_f[0][6]=array_f[indexmax][6]
 			array_finish_list.append(array_f[0])
