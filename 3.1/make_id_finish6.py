@@ -574,7 +574,18 @@ for i in range(len(dictionary)):
 				dictionary_updata.append(deskriptor1)
 				dictionary_updata.append(deskriptor2)
 			x+=1
+#цикл на удаление совпадающих дескрипторов
+i=0
+while i < len(dictionary_updata):
+	ID=dictionary_updata[i][0]
+	k=0
+	while k < len(dictionary_updata)-i-1:
+		dist=distance.euclidean(dictionary_updata[i+k+1][1], dictionary_updata[i+k+1][1])
+		if dictionary_updata[i+k+1][0]==ID and dist==0:
+			del dictionary_updata[i+k+1]
 
+		k+=1
+	i+=1
 with open("dictionary.pickle","wb") as f:
 	for i in range(len(dictionary_updata)):
 		pickle.dump(dictionary_updata[i], f)
