@@ -39,24 +39,14 @@ def rect_to_bb(rect):
 	return (x, y, w, h)
 
 
+
 def del_face():
-	deltat = [[0] * 1 for i in range(len(faceList))]
-	for tt in range(len(faceList)):
-		for kk in range(array_data[i][9]):
-
-			dt=array_data[i+kk][5]-faceList[tt][5]
-			deltat[tt][kk]=dt
-	tt=0
-	while tt <(len(faceList)):
-		n=0
-		for kk in range(array_data[i][9]):
-
-			if deltat[tt][kk]>2:
-				n+=1
-		if n==array_data[i][9]:
-			del faceList[tt]
-
-		tt+=1
+	q=0
+	while q< len(faceList):
+		dt=array_data[i][5]-faceList[q][5]
+		if dt>2:
+			del faceList[q]
+		q+=1
 
 
 ap = argparse.ArgumentParser()
@@ -76,6 +66,7 @@ facerec = dlib.face_recognition_model_v1('dlib_face_recognition_resnet_model_v1.
 faceCount=0
 array_finish_list=[]
 array_data=[]
+
 time_array = []
 bad_face=1
 
@@ -122,10 +113,11 @@ for n in range(len(time_array)):
 	rects = detector(gray, 0)
 	i=0
 	if(len(rects) > 0):
+		array_data_not_col=[]
 		for rect in rects:
 			(x, y, w, h) = face_utils.rect_to_bb(rect)
 
-			if (x>0 and y>0 and x+h<width and y+h<height):
+			if (x>0 and y>0 and x+w<width and y+h<height):
 				i+=1
 				start = time_array[n]
 
@@ -137,10 +129,17 @@ for n in range(len(time_array)):
 				otn=gor/vert
 
 				face_descriptor= facerec.compute_face_descriptor(frame, shape_cam)
-				facedata=["none",x, y, w, h, start, face_descriptor,False,0,i,"none",otn]
-				array_data.append(facedata)
+				
+				facedata=["none",x, y, w, h, start, face_descriptor,False,0,0,"none",otn,False]
+				array_data_not_col.append(copy.deepcopy(facedata))
 
+		for m in range(len(array_data_not_col)):
+			array_data_not_col[m][9]=int(i)
+			print(array_data_not_col[m][9])
+			array_data.append(copy.deepcopy(array_data_not_col[m]))
 
+for l in range(len(array_data)):
+	print(array_data[l][9])			
 
 i=0
 faceList = []
@@ -154,12 +153,23 @@ array_for_apdata_3 = []
 array_namber_3 = []
 
 while i < len(array_data):
-	del_face()
 
+#	for l in range(len(faceList)):
+#		print(faceList[l][10])
+#		print(faceList[l][9])
+#		#print(array_data[i][5],array_data[i][10])
+#	print(array_data[i][5])
+#	del_face()
+	
+	for ll in range(len(faceList)):
+		frame= cv2.imread('info/'+str(faceList[ll][5])+'.jpg')
+		img=frame[int(faceList[ll][2]):int(faceList[ll][2])+int(faceList[ll][4]),int(faceList[ll][1]):int(faceList[ll][1])+int(faceList[ll][3])]
+		cv2.imwrite('info2/'+str(faceList[ll][10])+'  '+str(i)+'.jpg',img)
 #1
+	del_face()
 	if(len(faceList) == 0):
-		del_face()
-		for k in range(array_data[i][9]):
+		
+		for k in range(int(array_data[i][9])):
 			array_data[i+k][10]=faceCount
 			faceList.append(copy.deepcopy(array_data[i+k]))
 			faceCount += 1
@@ -169,10 +179,10 @@ while i < len(array_data):
 	del_face()
 	if(len(faceList) <= array_data[i][9]):
 		
-
+		#метки на обновление 
 		metka=[False]*array_data[i][9]
-		#каждому лицу из facelist выделить по столбцу из temporal_dist_array
 
+		#каждому лицу из facelist выделить по столбцу из temporal_dist_array
 		if len(temporal_dist_array)==0:
 			for face in range(len(faceList)):
 				temporal_dist_array.append([])
@@ -287,9 +297,10 @@ while i < len(array_data):
 
 
 #3
+	del_face()
 	if(len(faceList) > array_data[i][9]):
 
-		del_face()
+		#метка на удаление		
 		metka=[0]*len(faceList)
 
 		#каждому лицу из facelist выделить по столбцу из temporal_dist_array
@@ -383,8 +394,6 @@ while i < len(array_data):
 			n+=1
 
 ############################################################
-
-
 		n=0
 		while n < len(faceList):
 			if(metka[n]==False):
@@ -393,7 +402,8 @@ while i < len(array_data):
 
 	i+=array_data[i][9]
 
-	
+
+
 
 
 #приствоение ID, выполняя сравнения со словарем
@@ -402,7 +412,9 @@ for i in range(len(dictionary)):
 	ID  = dictionary[i][0]
 	for k in range(len(array_data)):
 		namber_k=array_data[k][10]
+
 		if (array_data[k][0]=="none"):
+
 			n_array=[]
 			array_namber_k=[]
 
@@ -425,9 +437,14 @@ for i in range(len(dictionary)):
 			minimym, index = index_min(array_namber_k, 8)
 
 			if (minimym<=0.5):
-				for d in range(len(array_namber_k)):
-					array_data[k+n_array[d]][0]=dictionary[i][0]
-					print('+++++++++++++++++++++++++++++++++++++++++++++++++++')
+				if array_namber_k[index][12]==False:
+					for d in range(len(array_namber_k)):
+						array_data[k+n_array[d]][0]=dictionary[i][0]
+						array_data[k+n_array[d]][12]=True
+						print('+++++++++++++++++++++++++++++++++++++++++++++++++++')
+
+
+
 
 
 if len(dictionary)==0:
@@ -445,32 +462,46 @@ for i in range(len(array_data)):
 	for k in range(len(array_data)-i-1):
 
 		namber_k=array_data[k+i+1][10]
-		if (array_data[k+i+1][0]=="none"):
-			n_array=[]
-			array_namber_k=[]
+		#if array_data[k+i+1][0]=="none":
+			
+		n_array=[]
+		array_namber_k=[]
 
-			dist=distance.euclidean(array_data[i][6], array_data[k+i+1][6])
-			array_data[k+i+1][8]=dist
-			list_1=copy.deepcopy(array_data[k+i+1])
-			array_namber_k.append(list_1)
-			namber=0
-			n_array.append(namber)
+		dist=distance.euclidean(array_data[i][6], array_data[k+i+1][6])
+		array_data[k+i+1][8]=dist
+		list_1=copy.deepcopy(array_data[k+i+1])
+		array_namber_k.append(list_1)
+		namber=0
+		n_array.append(namber)
 
-			for n in range(len(array_data)-i-k-1):
-				namber+=1
-				if (array_data[k+i+n+1][10]==namber_k):
-					n_array.append(namber)
-					dist=distance.euclidean(array_data[i][6], array_data[k+i+n+1][6])
-					array_data[i+k+n+1][8]=dist
-					list_1=copy.deepcopy(array_data[k+i+n+1])
-					array_namber_k.append(list_1)
+		for n in range(len(array_data)-i-k-1):
+			namber+=1
+			if (array_data[k+i+n+1][10]==namber_k):
+				n_array.append(namber)
+				dist=distance.euclidean(array_data[i][6], array_data[k+i+n+1][6])
+				array_data[i+k+n+1][8]=dist
+				list_1=copy.deepcopy(array_data[k+i+n+1])
+				array_namber_k.append(list_1)
 
-			minimym, index = index_min(array_namber_k, 8)
-			if (minimym<=0.5):
+		minimym, index = index_min(array_namber_k, 8)
+		if (minimym<=0.5):
+			#разрешить перезаписать ID если min меньше [8]
+			if array_namber_k[index][12]==False:
 				for d in range(len(array_namber_k)):
+				
 					array_data[k+i+n_array[d]][0]=array_data[i][0]
+					array_data[k+i+n_array[d]][12]=True
 					print('-------------------------------------------------')
 
+#коррекция....
+for i in range(len(array_data)):
+	namber=array_data[i][10]
+	ID=array_data[i][0]
+	for k in range(len(array_data)-i-1):
+		namber2=array_data[k+i+1][10]
+		ID2=array_data[k+i+1][0]
+		if ID!=ID2 and 	namber==namber2:
+			array_data[k+i+1][0]=ID
 
 
 #формировка строк для txt
@@ -568,7 +599,7 @@ for i in range(len(dictionary)):
 		all_deskriptor.sort(key=lambda i: i[3])
 		x=0
 		for l in reversed(all_deskriptor):
-			if x<3:
+			if x<5:
 				
 				deskriptor1=[l[0],l[1],l[3]]
 				deskriptor2=[l[0],l[2],l[4]]
@@ -581,7 +612,7 @@ while i < len(dictionary_updata):
 	ID=dictionary_updata[i][0]
 	k=0
 	while k < len(dictionary_updata)-i-1:
-		dist=distance.euclidean(dictionary_updata[i+k+1][1], dictionary_updata[i+k+1][1])
+		dist=distance.euclidean(dictionary_updata[i][1], dictionary_updata[i+k+1][1])
 		if dictionary_updata[i+k+1][0]==ID and dist==0:
 			del dictionary_updata[i+k+1]
 
