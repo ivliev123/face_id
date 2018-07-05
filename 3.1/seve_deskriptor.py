@@ -1,6 +1,6 @@
 
-# python3 seve_deskriptor.py  -f 'time.pickle' -m 'ab'
-# python3 seve_deskriptor.py  -f 'time.pickle' -m 'ab' --picamera 1
+# python3 seve_deskriptor.py 
+# python3 seve_deskriptor.py  --picamera 1
 
 from skimage import io
 from imutils.video import VideoStream
@@ -24,10 +24,7 @@ detector = dlib.get_frontal_face_detector()
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--picamera", type=int, default=-1,
 	help="использование pi камеры")
-ap.add_argument("-f", "--file", type=str, default="",
-	help="выбор файла")
-ap.add_argument("-m", "--metod", type=str, default="ab",
-	help="выбор- открытие файла для чтения, записи, дозаписи")
+
 args = vars(ap.parse_args())
 
 
@@ -49,10 +46,10 @@ while True:
 	cv2.imshow("Frame", frame)
 
 	key = cv2.waitKey(1) & 0xFF
-	# if the `q` key was pressed, break from the loop
+	
 	if key == ord("q"):
 		break
 
-# do a bit of cleanup
+
 cv2.destroyAllWindows()
 vs.stop()
